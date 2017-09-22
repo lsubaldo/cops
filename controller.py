@@ -47,50 +47,77 @@ class Controller:
         elif node.get_down() is not None:
             queue.append(node.get_down())
 
+    ''' Walk through the queue and pass in (Node parent) to find
+    specific (Node robber). If we find the robber, return (Node robber)
+    to walk back up graphdict. Otherwise, add children to (List queue)
+    and (dictionary graphdict)
+    '''
     def add_to_q_and_dict(parent, robber, queue, graphdict):
-        #add cop's children to queue
-        #FIXME: check if found robber!
-
         if parent.get_up() is not None:
-            if parent.get_up() == robber:
-                return True
             graphdict[parent.get_up()] = parent
+            if parent.get_up() == robber:
+                return parent.get_up()
             add_children_to_q(parent.get_up(), queue)
 
         elif parent.get_right() is not None:
-            if parent.get_up() == robber:
-                return True
             graphdict[parent.get_right()] = parent
-            add_children_to_q(parent.get_up(), queue)
+            if parent.get_right() == robber:
+                return parent.get_right()
+            add_children_to_q(parent.get_right(), queue)
 
         elif parent.get_left() is not None:
-            if parent.get_up() == robber:
-                return True
             graphdict[parent.get_left()] = parent
-            add_children_to_q(parent.get_up(), queue)
+            if parent.get_left() == robber:
+                return parent.get_left()
+            add_children_to_q(parent.get_left(), queue)
 
         elif parent.get_down() is not None:
-            if parent.get_up() == robber:
-                return True
             graphdict[parent.get_down()] = parent
-            add_children_to_q(parent.get_up(), queue)
+            if parent.get_down() == robber:
+                return parent.get_down()
+            add_children_to_q(parent.get_down(), queue)
 
+        else return None
 
+    def get_direction(parent, child):
+        if parent.get_up() == :
+            return UP
+        if parent.get_right() == :
+            return RIGHT
+        if parent.get_left() == :
+            return LEFT
+        if parent.get_down() == :
+            return DOWN
+
+    ''' Finds a valid path to a specific robber via a breadth-first search.
+    Returns the direction the cop should move.
+    '''
     def find_valid_path(cop, rob):
-        copcol, coprow = get_column_row(cop)
+        copcol, coprow = get_column_row(cop) #pull coordinates (int) out of string
         robcol, robrow = get_column_row(rob)
+        copnode = maze[copcol][coprow] #get nodes from maze
+        robnode = maze[robcol][robrow]
+
         queue = []
         graphdict = {}
 
-        copnode = maze[copcol][coprow] #get cop's node from maze
-        robnode = maze[robcol][robrow]
+        # loop through queue until find robber; robber will be entered into
+        # graphdict
+        robkey = add_to_q_and_dict(copnode, robnode, queue, graphdict)
+        qidx = 0;
+        while robkey is None:
+            suspect = queue[qidx]
+            robkey = add_to_q_and_dict(suspect, robnode, queue, graphdict)
+            qidx += 1
 
-        current = -1 #copnode
-        found = add_to_q_and_dict(copnode, robnode, queue, graphdict)
-        while not found:
+        #loop through dictionary to find the direction cop should go
+        temp = graphdict[robkey]
+        while graphdict[temp] is not copnode:
+            temp =
+
+        direction = get_direction(graphdict[temp], temp)
 
 
-        if current == -1:
 
 
 
