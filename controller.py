@@ -47,53 +47,79 @@ class Controller:
         elif node.get_down() is not None:
             queue.append(node.get_down())
 
+    ''' Walk through the queue and pass in (Node parent) to find
+    specific (Node robber). If we find the robber, return (Node robber)
+    to walk back up graphdict. Otherwise, add children to (List queue)
+    and (dictionary graphdict)
+    '''
     def add_to_q_and_dict(parent, robber, queue, graphdict):
-        #add cop's children to queue
-        #FIXME: check if found robber!
-
         if parent.get_up() is not None:
-            if parent.get_up() == robber:
-                return True
             graphdict[parent.get_up()] = parent
+            if parent.get_up() == robber:
+                return parent.get_up()
             add_children_to_q(parent.get_up(), queue)
 
         elif parent.get_right() is not None:
-            if parent.get_up() == robber:
-                return True
             graphdict[parent.get_right()] = parent
-            add_children_to_q(parent.get_up(), queue)
+            if parent.get_right() == robber:
+                return parent.get_right()
+            add_children_to_q(parent.get_right(), queue)
 
         elif parent.get_left() is not None:
-            if parent.get_up() == robber:
-                return True
             graphdict[parent.get_left()] = parent
-            add_children_to_q(parent.get_up(), queue)
+            if parent.get_left() == robber:
+                return parent.get_left()
+            add_children_to_q(parent.get_left(), queue)
 
         elif parent.get_down() is not None:
-            if parent.get_up() == robber:
-                return True
             graphdict[parent.get_down()] = parent
-            add_children_to_q(parent.get_up(), queue)
+            if parent.get_down() == robber:
+                return parent.get_down()
+            add_children_to_q(parent.get_down(), queue)
 
+        else: return None
 
+    def get_direction(parent, child):
+        if parent.get_up() == child:
+            return UP
+        if parent.get_right() == child:
+            return RIGHT
+        if parent.get_left() == child:
+            return LEFT
+        if parent.get_down() == child:
+            return DOWN
+
+    ''' (str, str) -> str
+    Finds the shortest valid path to a specific robber via a breadth-first
+    search. Returns the direction the cop should move.
+    '''
     def find_valid_path(cop, rob):
-        copcol, coprow = get_column_row(cop)
+        copcol, coprow = get_column_row(cop) #pull coordinates (int) out of string
         robcol, robrow = get_column_row(rob)
+        copnode = maze[copcol][coprow] #get nodes from maze
+        robnode = maze[robcol][robrow]
+
         queue = []
         graphdict = {}
 
-        copnode = maze[copcol][coprow] #get cop's node from maze
-        robnode = maze[robcol][robrow]
+        # loop through queue until find robber; robber will be entered into
+        # graphdict
+        robkey = add_to_q_and_dict(copnode, robnode, queue, graphdict)
+        qidx = 0;
+        while robkey is None:
+            suspect = queue[qidx]
+            robkey = add_to_q_and_dict(suspect, robnode, queue, graphdict)
+            qidx += 1
 
-        current = -1 #copnode
-        found = add_to_q_and_dict(copnode, robnode, queue, graphdict)
-        while not found:
+        #loop through dictionary to find the direction cop should go
+        temp = robkey
+        while graphdict[temp] is not copnode:
+            temp = graphdict[temp]
 
+        direction = get_direction(graphdict[temp], temp)
+        return direction
 
-        if current == -1:
-
-
-
+    #TODO: write a function that matches a cop to the closest robber with simple coordinate geometry
 
     def on_my_turn(self, maze, player_coordinates, banks):
         '''
@@ -114,12 +140,14 @@ class Controller:
             moves: { 'ROBBERS': [A list of directions or None]}
         '''
 
-        # import pdb; pdb.set_trace()  # Uncomment this line to enabe the debugger.
+        # import pdb; pdb.set_trace()  # Uncomment this line to enable the debugger.
 
         cops = player_coordinates['COPS']
         robbers = player_coordinates['ROBBERS']
         valid_robs = robbers
         move_list = [None] * len(cops)
+
+        '''
         for i in range(len(robbers)):
             if robbers[i] is None:
                 del valid_robs[i]
@@ -131,7 +159,11 @@ class Controller:
             if cops[i] is None:
                 continue  # we skip players that are no longer in the game.
             col, row = get_column_row(cops[i])
-            player_node = maze[col][row]
+            copnode = maze[col][row]
+        '''
+        for i in range(len(cops)):
+            move_list[i] = find_valid_path(cops[i], robbers[i])
+
 
             # Take the first available direction. Don't do this!!!!
             # if player_node.get_up() is not None:
